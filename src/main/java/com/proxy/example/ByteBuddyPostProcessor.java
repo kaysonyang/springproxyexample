@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,24 +30,56 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
 
     private static final Logger logger = Logger.getAnonymousLogger();
 
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { return bean; }
+    private final HashSet<Class> shouldBeProxied = new HashSet<>();
+
+    private final HashMap<Class, Class> proxiedClasses = new HashMap<>();
+
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        if(bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) shouldBeProxied.add(bean.getClass());
+        return bean;
+    }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
-        if(!bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) return bean;
+        boolean containsInOriginal = shouldBeProxied.contains(bean.getClass()); // bean could be not proxied
+        // or it could be ByteBuddy proxy, so we have to get original class
+        // we assume all ByteBuddy proxies are stored in proxiedClasses map, to we need to iterate
+
+        if(!containsInOriginal) {
+            Class clazz = bean.getClass();
+            while(clazz != null && clazz.getName().contains("$ByteBuddy$")){
+                clazz = proxiedClasses.get(clazz);
+                if(clazz != null && shouldBeProxied.contains(clazz)) {
+                    containsInOriginal = true;
+                    break;
+                }
+            }
+        }
+
+        // class should not be proxied
+        if(!containsInOriginal) return bean;
 
         logger.log(Level.INFO, "postProcessBeforeInitialization for bean: " + bean.getClass().getName());
         logger.log(Level.INFO, "Is " + MyAnnotationForByteBuddy.class.getName() + " present? " + bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class));
         logger.log(Level.INFO, "Making proxy object...");
 
-        Class<?> proxyClass = new ByteBuddy()
-                .subclass(bean.getClass())
-                .defineField("target", bean.getClass(), Visibility.PRIVATE)
-                .annotateType(bean.getClass().getDeclaredAnnotations()) // retain parent's annotations
-                .method(any())
-                .intercept(MethodDelegation.to(Interceptor.class))
-                .make()
-                .load(bean.getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION).getLoaded();
+        Class<?> proxyClass;
+
+        // trying to reuse proxy class
+        if(proxiedClasses.get(bean.getClass()) != null){
+            proxyClass = proxiedClasses.get(bean.getClass());
+        }else{
+            //slow path
+            proxyClass = new ByteBuddy()
+                    .subclass(bean.getClass())
+                    .defineField("target", bean.getClass(), Visibility.PRIVATE)
+                    .annotateType(bean.getClass().getDeclaredAnnotations()) // retain parent's annotations
+                    .method(any())
+                    .intercept(MethodDelegation.to(Interceptor.class))
+                    .make()
+                    .load(bean.getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION).getLoaded();
+            proxiedClasses.put(bean.getClass(), proxyClass);
+        }
 
         Object beanInstance = null;
         try{
