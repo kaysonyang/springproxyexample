@@ -11,21 +11,21 @@ public class Main {
 
         MyAwesomeBeanForCGLib bean = configApplicationContext.getBean(MyAwesomeBeanForCGLib.class);
 
-        System.out.println("Checking for annotation for CGLIB in main: " + bean.getClass().isAnnotationPresent(MyAnnotationForCGLib.class));
+        System.out.println("Checking for annotation for CGLIB in main: " + bean.getClass().isAnnotationPresent(MyAnnotationForCGLib.class)); // false for CGLib
 
         bean.method();
 
         MyAwesomeBeanForByteBuddy bean2 = configApplicationContext.getBean(MyAwesomeBeanForByteBuddy.class);
 
-        System.out.println("Checking for annotation for ByteBuddy in main: " + bean2.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class));
+        System.out.println("Checking for annotation for ByteBuddy in main: " + bean2.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)); // true for ByteBuddy
 
         bean2.method();
 
         NonExistentBean nonExistentBean = configApplicationContext.getBean(NonExistentBean.class);
 
-        nonExistentBean.method();
+        nonExistentBean.method(); // proxied
 
-        System.out.println(nonExistentBean.hashCode());
+        System.out.println(nonExistentBean.hashCode()); // not proxied
 
         configApplicationContext.close();
     }
