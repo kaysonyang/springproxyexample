@@ -14,7 +14,6 @@ import org.springframework.stereotype.Component;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,34 +29,13 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
 
     private static final Logger logger = Logger.getAnonymousLogger();
 
-    private final HashSet<Class> shouldBeProxied = new HashSet<>();
-
     private final HashMap<Class, Class> proxiedClasses = new HashMap<>();
 
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if(bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) shouldBeProxied.add(bean.getClass());
-        return bean;
-    }
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { return bean; }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
-        boolean containsInOriginal = shouldBeProxied.contains(bean.getClass()); // bean could be not proxied
-        // or it could be ByteBuddy proxy, so we have to get original class
-        // we assume all ByteBuddy proxies are stored in proxiedClasses map, to we need to iterate
-
-        if(!containsInOriginal) {
-            Class clazz = bean.getClass();
-            while(clazz != null && clazz.getName().contains("$ByteBuddy$")){
-                clazz = proxiedClasses.get(clazz);
-                if(clazz != null && shouldBeProxied.contains(clazz)) {
-                    containsInOriginal = true;
-                    break;
-                }
-            }
-        }
-
-        // class should not be proxied
-        if(!containsInOriginal) return bean;
+        if(!bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) return bean;
 
         logger.log(Level.INFO, "postProcessBeforeInitialization for bean: " + bean.getClass().getName());
         logger.log(Level.INFO, "Is " + MyAnnotationForByteBuddy.class.getName() + " present? " + bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class));
