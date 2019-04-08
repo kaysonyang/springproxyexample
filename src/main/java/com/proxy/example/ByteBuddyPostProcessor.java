@@ -35,6 +35,7 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
+        // let's assume all previous proxies were created by ByteBuddy and preserved parent's type annotations
         if(!bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) return bean;
 
         logger.log(Level.INFO, "postProcessBeforeInitialization for bean: " + bean.getClass().getName());

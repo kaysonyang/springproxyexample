@@ -22,18 +22,13 @@ public class CGLibProxyPostProcessor implements BeanPostProcessor {
 
     private static final Logger logger = Logger.getAnonymousLogger();
 
-    private final HashSet<Class> shouldBeProxied = new HashSet<>();
-
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-        if(bean.getClass().isAnnotationPresent(MyAnnotationForCGLib.class)) shouldBeProxied.add(bean.getClass());
-        return bean;
-    }
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { return bean; }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
-        boolean containsInOriginal = shouldBeProxied.contains(bean.getClass()); // bean could be not proxied
-        // or it could be CGLib proxy, so we have to get original class
-        if(!containsInOriginal) containsInOriginal = shouldBeProxied.contains(ClassUtils.getUserClass(bean));
+        boolean containsInOriginal = bean.getClass().isAnnotationPresent(MyAnnotationForCGLib.class); // bean could be not proxied
+        // or it could be CGLib proxy, so we have to get original class (let's assume 1 level proxy, otherwise we should iterate by .getSuperClass()
+        if(!containsInOriginal) containsInOriginal = ClassUtils.getUserClass(bean).isAnnotationPresent(MyAnnotationForCGLib.class);
         // class should not be proxied
         if(!containsInOriginal) return bean;
 
