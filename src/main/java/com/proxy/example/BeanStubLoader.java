@@ -3,7 +3,9 @@ package com.proxy.example;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import net.bytebuddy.implementation.MethodDelegation;
-import net.bytebuddy.implementation.bind.annotation.*;
+import net.bytebuddy.implementation.bind.annotation.AllArguments;
+import net.bytebuddy.implementation.bind.annotation.Origin;
+import net.bytebuddy.implementation.bind.annotation.RuntimeType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
@@ -13,7 +15,8 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Method;
 
-import static net.bytebuddy.matcher.ElementMatchers.*;
+import static net.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
+import static net.bytebuddy.matcher.ElementMatchers.not;
 
 @Component
 @SuppressWarnings("unused")
@@ -33,11 +36,12 @@ public class BeanStubLoader implements BeanDefinitionRegistryPostProcessor {
         registry.registerBeanDefinition(proxyClass.getName(), BeanDefinitionBuilder.genericBeanDefinition(proxyClass).getBeanDefinition());
     }
 
-    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException { }
+    public void postProcessBeanFactory(ConfigurableListableBeanFactory configurableListableBeanFactory) throws BeansException {
+    }
 
     public static class Interceptor {
         @RuntimeType
-        public static Object intercept(@Origin Method method,  @AllArguments Object... args) {
+        public static Object intercept(@Origin Method method, @AllArguments Object... args) {
             try {
                 System.out.println("Before method invocation...\n" + method);
                 return null;

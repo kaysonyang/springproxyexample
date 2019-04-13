@@ -9,23 +9,23 @@ import java.util.concurrent.ThreadLocalRandom;
 @Component
 @SuppressWarnings("unused")
 @Scope("prototype")
-public class NormalBean extends AbstractNormalBean{
+public class NormalBean extends AbstractNormalBean {
+
+    private int random;
+
+    public NormalBean() {
+        System.out.println("Normal bean created!");
+        random = ThreadLocalRandom.current().nextInt();
+    }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         System.out.println("Normal bean init");
     }
 
     @PostConstruct
-    public void init2(){
+    public void init2() {
         System.out.println("Normal bean init2");
-    }
-
-    private int random;
-
-    public NormalBean(){
-        System.out.println("Normal bean created!");
-        random = ThreadLocalRandom.current().nextInt();
     }
 
     int getRandom() {

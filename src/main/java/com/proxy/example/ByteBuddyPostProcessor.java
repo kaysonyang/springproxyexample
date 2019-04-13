@@ -24,19 +24,19 @@ import static net.bytebuddy.matcher.ElementMatchers.any;
 @SuppressWarnings("unused")
 public class ByteBuddyPostProcessor implements BeanPostProcessor {
 
+    private static final Logger logger = Logger.getAnonymousLogger();
+    private final HashMap<Class, Class> proxiedClasses = new HashMap<>();
     @Autowired
     private ApplicationContext applicationContext;
 
-    private static final Logger logger = Logger.getAnonymousLogger();
-
-    private final HashMap<Class, Class> proxiedClasses = new HashMap<>();
-
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException { return bean; }
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
 
     public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
 
         // let's assume all previous proxies were created by ByteBuddy and preserved parent's type annotations
-        if(!bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) return bean;
+        if (!bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class)) return bean;
 
         logger.log(Level.INFO, "postProcessBeforeInitialization for bean: " + bean.getClass().getName());
         logger.log(Level.INFO, "Is " + MyAnnotationForByteBuddy.class.getName() + " present? " + bean.getClass().isAnnotationPresent(MyAnnotationForByteBuddy.class));
@@ -45,9 +45,9 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
         Class<?> proxyClass;
 
         // trying to reuse proxy class
-        if(proxiedClasses.get(bean.getClass()) != null){
+        if (proxiedClasses.get(bean.getClass()) != null) {
             proxyClass = proxiedClasses.get(bean.getClass());
-        }else{
+        } else {
             //slow path
             proxyClass = new ByteBuddy()
                     .subclass(bean.getClass())
@@ -61,12 +61,12 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
         }
 
         Object beanInstance = null;
-        try{
+        try {
             beanInstance = proxyClass.newInstance();
             Field target = beanInstance.getClass().getDeclaredField("target");
             target.setAccessible(true);
             target.set(beanInstance, bean);
-        }catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

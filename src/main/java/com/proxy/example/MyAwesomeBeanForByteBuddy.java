@@ -11,7 +11,7 @@ public class MyAwesomeBeanForByteBuddy {
     @Autowired
     private NormalBean normalBean;
 
-    public void method(){
+    public void method() {
         System.out.println("Method was called! " + normalBean.getRandom());
     }
 }

@@ -4,7 +4,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 public class Main {
 
-    public static void main(String... args){
+    public static void main(String... args) {
         AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
         configApplicationContext.scan(Main.class.getPackage().getName());
         configApplicationContext.refresh();
