@@ -3,6 +3,8 @@ package com.proxy.example;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import net.bytebuddy.implementation.DefaultMethodCall;
+import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.implementation.bind.annotation.*;
 import org.springframework.beans.BeansException;
@@ -19,6 +21,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static net.bytebuddy.matcher.ElementMatchers.any;
+import static net.bytebuddy.matcher.ElementMatchers.named;
 
 @Component
 @SuppressWarnings("unused")
@@ -55,6 +58,9 @@ public class ByteBuddyPostProcessor implements BeanPostProcessor {
                     .annotateType(bean.getClass().getDeclaredAnnotations()) // retain parent's annotations
                     .method(any())
                     .intercept(MethodDelegation.to(Interceptor.class))
+                    .implement(DemoInterface.class)
+                    .method(named("method"))
+                    .intercept(DefaultMethodCall.prioritize(DemoInterface.class))
                     .make()
                     .load(bean.getClass().getClassLoader(), ClassLoadingStrategy.Default.INJECTION).getLoaded();
             proxiedClasses.put(bean.getClass(), proxyClass);
