@@ -4,12 +4,12 @@ import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.implementation.FieldAccessor;
+import net.bytebuddy.implementation.FixedValue;
 import net.bytebuddy.implementation.MethodDelegation;
 import net.bytebuddy.matcher.ElementMatchers;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import static net.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
-import static net.bytebuddy.matcher.ElementMatchers.not;
+import static net.bytebuddy.matcher.ElementMatchers.*;
 
 public class Main {
 
@@ -55,8 +55,25 @@ public class Main {
                 .load(Service.class.getClassLoader())
                 .getLoaded()
                 .newInstance();
-        service.bar(123);
-        service.foo(456);
+        //service.bar(123);
+        //service.foo(456);
+
+
+
+        Foo dynamicFoo = new ByteBuddy()
+                .subclass(Foo.class)
+                // 匹配由Foo.class声明的方法
+                .method(isDeclaredBy(Foo.class)).intercept(FixedValue.value("One!"))
+                // 匹配名为foo的方法
+                .method(named("foo")).intercept(FixedValue.value("Two!"))
+                // 匹配名为foo，入参数量为1的方法
+                .method(named("foo").and(takesArguments(1))).intercept(FixedValue.value("Three!"))
+                .make()
+                .load(Main.class.getClassLoader())
+                .getLoaded()
+                .newInstance();
+        String res = dynamicFoo.foo("111");
+        System.out.println(res);
     }
 
 
