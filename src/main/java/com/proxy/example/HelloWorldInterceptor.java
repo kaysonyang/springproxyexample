@@ -7,6 +7,7 @@ package com.proxy.example;
  */
 public  class HelloWorldInterceptor implements Interceptor {
     @Override
+    @CustomLog
     public String doSomethingElse() {
         return "====== Hello World! ======";
     }

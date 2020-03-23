@@ -7,6 +7,7 @@ package com.proxy.example;
  */
 public class UserType {
     public UserType(){}
+    @CustomLog
     public String doSomething() { return "======== do Something ======="; }
 }
 
