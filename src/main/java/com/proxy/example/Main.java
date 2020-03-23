@@ -1,9 +1,11 @@
 package com.proxy.example;
 
 import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.asm.Advice;
 import net.bytebuddy.description.modifier.Visibility;
 import net.bytebuddy.implementation.FieldAccessor;
 import net.bytebuddy.implementation.MethodDelegation;
+import net.bytebuddy.matcher.ElementMatchers;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static net.bytebuddy.matcher.ElementMatchers.isDeclaredBy;
@@ -11,7 +13,7 @@ import static net.bytebuddy.matcher.ElementMatchers.not;
 
 public class Main {
 
-    public static void main(String... args) {
+    public static void main(String... args) throws IllegalAccessException, InstantiationException {
         AnnotationConfigApplicationContext configApplicationContext = new AnnotationConfigApplicationContext();
         configApplicationContext.scan(Main.class.getPackage().getName());
         configApplicationContext.refresh();
@@ -43,6 +45,18 @@ public class Main {
             e.printStackTrace();
         }
 
+
+
+        Service service = new ByteBuddy()
+                .subclass(Service.class)
+                .method(ElementMatchers.any())
+                .intercept(Advice.to(LoggerAdvisor.class))
+                .make()
+                .load(Service.class.getClassLoader())
+                .getLoaded()
+                .newInstance();
+        service.bar(123);
+        service.foo(456);
     }
 
 
