@@ -47,33 +47,47 @@ public class Main {
 
 
 
-        Service service = new ByteBuddy()
-                .subclass(Service.class)
+//        Service service = new ByteBuddy()
+//                .subclass(Service.class)
+//                .method(ElementMatchers.any())
+//                .intercept(Advice.to(LoggerAdvisor.class))
+//                .make()
+//                .load(Service.class.getClassLoader())
+//                .getLoaded()
+//                .newInstance();
+//        service.bar(123);
+//        service.foo(456);
+
+        Foo foo = new ByteBuddy()
+                .subclass(Foo.class)
                 .method(ElementMatchers.any())
                 .intercept(Advice.to(LoggerAdvisor.class))
                 .make()
-                .load(Service.class.getClassLoader())
+                .load(Foo.class.getClassLoader())
                 .getLoaded()
                 .newInstance();
-        //service.bar(123);
-        //service.foo(456);
+
+        String ss = foo.foo2("hello work =====");
+
+        System.out.println(ss);
 
 
-
-        Foo dynamicFoo = new ByteBuddy()
+      /*  Foo dynamicFoo = new ByteBuddy()
                 .subclass(Foo.class)
-                // 匹配由Foo.class声明的方法
+                //匹配由Foo.class声明的方法
                 .method(isDeclaredBy(Foo.class)).intercept(FixedValue.value("One!"))
                 // 匹配名为foo的方法
                 .method(named("foo")).intercept(FixedValue.value("Two!"))
                 // 匹配名为foo，入参数量为1的方法
                 .method(named("foo").and(takesArguments(1))).intercept(FixedValue.value("Three!"))
+
                 .make()
-                .load(Main.class.getClassLoader())
+
+                .load(Foo.class.getClassLoader())
                 .getLoaded()
                 .newInstance();
         String res = dynamicFoo.foo("111");
-        System.out.println(res);
+        System.out.println(res);*/
     }
 
 

@@ -7,15 +7,18 @@ package com.proxy.example;
  */
 public class Foo {
 
-    String bar() {
+
+    public String bar() {
         return "bar";
     }
 
-    String foo() {
+
+    public String foo() {
         return "foo";
     }
 
-    String foo(String s) {
-        return "foo" + s;
+    @CustomLog
+    public String foo2(String s) {
+        return "foo " + s;
     }
 }
