@@ -53,7 +53,8 @@ public class Main {
                 .method(not(isDeclaredBy(Object.class))) // 非父类 Object 声明的方法
                 .intercept(MethodDelegation.toField("interceptor")) // 拦截委托给属性字段 interceptor
                 .defineField("interceptor", Interceptor.class, Visibility.PRIVATE) // 定义一个属性字段
-                .implement(InterceptionAccessor.class).intercept(FieldAccessor.ofBeanProperty()) // 实现 InterceptionAccessor 接口
+                .implement(InterceptionAccessor.class)
+                .intercept(FieldAccessor.ofBeanProperty()) // 实现 InterceptionAccessor 接口
                 .make()
                 .load(Main.class.getClassLoader())
                 .getLoaded();

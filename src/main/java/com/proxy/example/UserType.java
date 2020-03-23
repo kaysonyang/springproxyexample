@@ -7,7 +7,7 @@ package com.proxy.example;
  */
 public class UserType {
     public UserType(){}
-    public String doSomething() { return null; }
+    public String doSomething() { return "======== do Something ======="; }
 }
 
 
